@@ -130,6 +130,12 @@ coef <- max(inc_long2$incidence) /
 mort_long2$mortality_scaled <-
   mort_long2$mortality * coef
 
+data_final <- inc_long2 %>%
+  left_join(
+    mort_long2,
+    by = c("region", "year")
+  )
+
 # =========================================================
 # GRAPHIQUE FACETS
 # =========================================================
@@ -139,13 +145,22 @@ p_facets <- ggplot() +
   # =====================================================
 # BARRES MORTALITE
 # =====================================================
-
+annotate(
+  "rect",
+  xmin = 2019.5,
+  xmax = 2022.5,
+  ymin = -Inf,
+  ymax = Inf,
+  fill = "gold",
+  alpha = 0.15
+) +
+  
 geom_col(
-  data = mort_long2,
+  data = data_final,
   aes(
     x = year,
-    y = mortality_scaled,
-    fill = "Mortality"
+    y = incidence,
+    fill = "Incidence"
   ),
   width = 0.35,
   alpha = 0.7
@@ -156,22 +171,22 @@ geom_col(
 # =====================================================
 
 geom_line(
-  data = inc_long2,
+  data = data_final,
   aes(
     x = year,
-    y = incidence,
-    color = "Incidence",
+    y = mortality_scaled,
+    color = "Mortality",
     group = region
   ),
   size = 1.2
 ) +
   
   geom_point(
-    data = inc_long2,
+    data = data_final,
     aes(
       x = year,
-      y = incidence,
-      color = "Incidence"
+      y = mortality_scaled,
+      color = "Mortality"
     ),
     size = 2.5
   ) +
@@ -210,16 +225,14 @@ scale_y_continuous(
 # =====================================================
 
 scale_color_manual(
-  name = "Indicator",
-  values = c(
-    "Incidence" = "#1e90ff"
+  name = "Mortality",
+  values = c("#1e90ff"
   )
 ) +
   
   scale_fill_manual(
-    name = "Indicator",
-    values = c(
-      "Mortality" = "#ff0000"
+    name = "Incidence",
+    values = c("#ff0000"
     )
   ) +
   
@@ -236,8 +249,15 @@ labs(
 # THEME
 # =====================================================
 
-theme_bw(base_size = 10) +
+theme_bw(base_size = 8) +
   
+  theme(
+    axis.text.x = element_text(
+      angle = 90,
+      vjust = 0.5,
+      hjust = 1
+    )
+  ) + 
   theme(
     
     # TITRE
